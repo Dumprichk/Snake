@@ -1,0 +1,2562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Snake</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html {
+            overflow-x: hidden;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 50% 10%, #172a3f 0%, #080d17 45%, #020307 100%);
+            color: white;
+            font-family: "Orbitron", Arial, sans-serif;
+            text-align: center;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, .015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, .015) 1px, transparent 1px);
+            background-size: 35px 35px;
+        }
+
+        /* =========================================
+   TITLE
+========================================= */
+
+        h1 {
+            margin: 8px 0 2px;
+            font-size: clamp(30px, 5vw, 45px);
+            letter-spacing: 3px;
+            text-shadow:
+                0 0 10px #00ff88,
+                0 0 25px #00ff88,
+                0 0 45px #00ff88;
+        }
+
+        .subtitle {
+            color: #7dffbe;
+            margin-bottom: 8px;
+            font-size: 9px;
+            letter-spacing: 2px;
+        }
+
+        /* =========================================
+   STATS
+========================================= */
+
+        #stats {
+            width: min(620px, 92vw);
+            margin: 7px auto;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+        }
+
+        .stat {
+            background: rgba(20, 30, 45, .9);
+            border: 1px solid #26384d;
+            border-radius: 9px;
+            padding: 6px 3px;
+        }
+
+        .stat-label {
+            display: block;
+            color: #788ca5;
+            font-size: 7px;
+            margin-bottom: 3px;
+        }
+
+        .stat-value {
+            font-size: 12px;
+        }
+
+        /* =========================================
+   GAME
+========================================= */
+
+        #gameWrapper {
+            position: relative;
+            width: min(420px, 72vw);
+            margin: 8px auto;
+        }
+
+        canvas {
+            width: 100%;
+            aspect-ratio: 1;
+            display: block;
+            background: #050912;
+            border: 2px solid #25415b;
+            border-radius: 14px;
+            box-shadow:
+                0 0 15px rgba(0, 255, 136, .15),
+                0 0 40px rgba(0, 255, 136, .08),
+                inset 0 0 30px rgba(0, 0, 0, .8);
+        }
+
+        /* =========================================
+   OVERLAYS
+========================================= */
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: rgba(2, 6, 12, .84);
+            backdrop-filter: blur(6px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .overlay h2 {
+            font-size: 30px;
+            margin: 5px;
+            text-shadow: 0 0 25px #00ff88;
+        }
+
+        .overlay p {
+            color: #a8b7c9;
+            font-size: 11px;
+            margin: 4px;
+        }
+
+        .big-score {
+            font-size: 40px;
+            color: #00ff88;
+            text-shadow: 0 0 20px #00ff88;
+        }
+
+        /* =========================================
+   BUTTONS
+========================================= */
+
+        button {
+            font-family: inherit;
+            border: 1px solid #31506a;
+            color: white;
+            background: linear-gradient(180deg, #19304a, #0e1c2b);
+            padding: 8px 12px;
+            margin: 3px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: .15s;
+            font-size: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, .25);
+        }
+
+        button:active {
+            transform: scale(.96);
+        }
+
+        .primary {
+            background: linear-gradient(180deg, #00d977, #009e58);
+            border-color: #00ff88;
+            color: #00150b;
+            font-weight: 900;
+        }
+
+        /* =========================================
+   MAIN BUTTONS
+========================================= */
+
+        #mainButtons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2px;
+            margin: 3px auto;
+        }
+
+        /* =========================================
+   MESSAGE
+========================================= */
+
+        #message {
+            min-height: 18px;
+            font-size: 10px;
+            color: #7dffbe;
+            text-shadow: 0 0 12px #00ff88;
+        }
+
+        /* =========================================
+   COMBO
+========================================= */
+
+        #comboText {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 14px;
+            color: #ffe600;
+            text-shadow: 0 0 15px #ffe600;
+            opacity: 0;
+            transition: .15s;
+            pointer-events: none;
+        }
+
+        #comboText.show {
+            opacity: 1;
+            transform: scale(1.12);
+        }
+
+        /* =========================================
+   PANELS
+========================================= */
+
+        .panel {
+            width: min(700px, 92vw);
+            margin: 8px auto;
+            background: rgba(12, 19, 29, .97);
+            border: 1px solid #26384d;
+            border-radius: 14px;
+            padding: 14px;
+            text-align: left;
+        }
+
+        .panel.hidden {
+            display: none;
+        }
+
+        .panel h2 {
+            margin: 0 0 10px;
+            color: #00ff88;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        /* =========================================
+   SHOP
+========================================= */
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .shop-item {
+            background: #111d2a;
+            border: 1px solid #26384d;
+            border-radius: 11px;
+            padding: 10px;
+            min-width: 0;
+        }
+
+        .shop-item h3 {
+            margin: 0 0 5px;
+            font-size: 12px;
+        }
+
+        .shop-item p {
+            color: #8395aa;
+            font-size: 9px;
+            min-height: 25px;
+            margin: 5px 0;
+        }
+
+        .shop-item button {
+            margin: 2px;
+        }
+
+        .shop-item small {
+            color: #8395aa;
+            font-size: 8px;
+        }
+
+        /* Skin buttons */
+        .skin-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3px;
+        }
+
+        .skin-buttons button {
+            width: 100%;
+            margin: 0;
+        }
+
+        /* =========================================
+   ACHIEVEMENTS
+========================================= */
+
+        #achievementList {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .achievement {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            background: #111b28;
+            border: 1px solid #24364a;
+
+            padding: 9px 5px;
+            margin: 0;
+
+            border-radius: 10px;
+            min-height: 82px;
+
+            text-align: center;
+            opacity: .4;
+
+            transition: .2s;
+        }
+
+        .achievement.unlocked {
+            opacity: 1;
+            border-color: #00a95b;
+            box-shadow: 0 0 12px rgba(0, 255, 136, .12);
+        }
+
+        .achievement-icon {
+            font-size: 23px;
+            margin-bottom: 4px;
+        }
+
+        .achievement strong {
+            font-size: 11px;
+        }
+
+        .achievement div:last-child {
+            color: #788ca5;
+            font-size: 8px !important;
+            margin-top: 4px;
+        }
+
+        /* =========================================
+   MOBILE CONTROLS
+========================================= */
+
+        #controls {
+            display: none;
+            width: 150px;
+            margin: 5px auto;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 3px;
+        }
+
+        #controls button {
+            margin: 0;
+            height: 38px;
+            font-size: 15px;
+        }
+
+        #controls .empty {
+            visibility: hidden;
+        }
+
+        /* =========================================
+   POPUP
+========================================= */
+
+        #popup {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(10, 25, 20, .96);
+            border: 1px solid #00ff88;
+            padding: 11px 20px;
+            border-radius: 10px;
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(0, 255, 136, .3);
+            transition: .3s;
+            pointer-events: none;
+            font-size: 11px;
+        }
+
+        #popup.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* =========================================
+   MOBILE
+========================================= */
+
+        @media (max-width: 600px) {
+
+            h1 {
+                margin: 5px 0 2px;
+                font-size: 30px;
+            }
+
+            .subtitle {
+                margin-bottom: 5px;
+                font-size: 8px;
+            }
+
+            #stats {
+                width: 94vw;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 3px;
+            }
+
+            .stat {
+                padding: 5px 2px;
+            }
+
+            .stat-label {
+                font-size: 6px;
+            }
+
+            .stat-value {
+                font-size: 10px;
+            }
+
+            #gameWrapper {
+                width: min(390px, 82vw);
+                margin: 6px auto;
+            }
+
+            #controls {
+                display: grid;
+            }
+
+            .shop-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+
+            #achievementList {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .achievement {
+                min-height: 70px;
+                padding: 7px 3px;
+            }
+
+            .achievement-icon {
+                font-size: 20px;
+            }
+
+            .achievement strong {
+                font-size: 9px;
+            }
+
+            .panel {
+                width: 94vw;
+                padding: 10px;
+            }
+
+            .panel h2 {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🐍 NEON SNAKE</h1>
+    <div class="subtitle">EAT • GROW • SURVIVE</div>
+
+    <!-- STATS -->
+    <div id="stats">
+
+        <div class="stat">
+            <span class="stat-label">SCORE</span>
+            <span class="stat-value" id="score">0</span>
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">COINS</span>
+            <span class="stat-value" id="coins">0</span>
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">HIGH SCORE</span>
+            <span class="stat-value" id="highScore">0</span>
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">LEVEL</span>
+            <span class="stat-value" id="level">1</span>
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">COMBO</span>
+            <span class="stat-value">x<span id="combo">1</span></span>
+        </div>
+
+    </div>
+
+    <!-- GAME -->
+    <div id="gameWrapper">
+
+        <canvas id="game" width="600" height="600"></canvas>
+
+        <div id="comboText">🔥 COMBO!</div>
+
+        <!-- START -->
+        <div id="startScreen" class="overlay">
+
+            <div style="font-size:50px;">🐍</div>
+
+            <h2>NEON SNAKE</h2>
+
+            <p>Arrow keys or WASD to move.</p>
+            <p>Eat food. Build combos. Don't crash.</p>
+
+            <button class="primary" onclick="startGame()">
+                ▶ START GAME
+            </button>
+
+        </div>
+
+        <!-- PAUSE -->
+        <div id="pauseScreen" class="overlay hidden">
+
+            <div style="font-size:45px;">⏸️</div>
+
+            <h2>PAUSED</h2>
+
+            <button class="primary" onclick="togglePause()">
+                ▶ RESUME
+            </button>
+
+        </div>
+
+        <!-- GAME OVER -->
+        <div id="gameOverScreen" class="overlay hidden">
+
+            <div style="font-size:45px;">💀</div>
+
+            <h2>GAME OVER</h2>
+
+            <div class="big-score" id="finalScore">0</div>
+
+            <p id="finalMessage"></p>
+
+            <button class="primary" onclick="startGame()">
+                🔄 PLAY AGAIN
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- MESSAGE -->
+    <div id="message"></div>
+
+    <!-- MAIN BUTTONS -->
+    <div id="mainButtons">
+
+        <button onclick="togglePause()">⏸️ Pause</button>
+
+        <button onclick="togglePanel('shop')">
+            🛒 Shop
+        </button>
+
+        <button onclick="togglePanel('achievements')">
+            🏆 Achievements
+        </button>
+
+    </div>
+
+    <!-- MOBILE CONTROLS -->
+    <div id="controls">
+
+        <button class="empty">•</button>
+
+        <button onclick="changeDirection(0,-1)">
+            ⬆️
+        </button>
+
+        <button class="empty">•</button>
+
+        <button onclick="changeDirection(-1,0)">
+            ⬅️
+        </button>
+
+        <button onclick="changeDirection(0,1)">
+            ⬇️
+        </button>
+
+        <button onclick="changeDirection(1,0)">
+            ➡️
+        </button>
+
+    </div>
+
+    <!-- SHOP -->
+    <div id="shop" class="panel hidden">
+
+        <h2>🛒 SNAKE SHOP</h2>
+
+        <p style="
+        color:#8395aa;
+        text-align:center;
+        font-size:10px;
+    ">
+            Coins:
+            <strong id="shopCoins">0</strong> 🪙
+        </p>
+
+        <div class="shop-grid">
+
+            <!-- SPEED -->
+            <div class="shop-item">
+
+                <h3>⚡ Training Wheels</h3>
+
+                <p>
+                    Start games slightly slower.
+                    Higher levels give you more control.
+                </p>
+
+                <button onclick="buySpeed()">
+                    Buy — <span id="speedCost">50</span> 🪙
+                </button>
+
+                <small>
+                    Level: <span id="speedLevel">0</span>
+                </small>
+
+            </div>
+
+            <!-- COIN BONUS -->
+            <div class="shop-item">
+
+                <h3>💰 Coin Magnet</h3>
+
+                <p>
+                    Earn extra coins when eating food.
+                </p>
+
+                <button onclick="buyCoinBonus()">
+                    Buy — <span id="coinCost">75</span> 🪙
+                </button>
+
+                <small>
+                    Level: <span id="coinLevel">0</span>
+                </small>
+
+            </div>
+
+            <!-- LIFE -->
+            <div class="shop-item">
+
+                <h3>❤️ Extra Life</h3>
+
+                <p>
+                    Survive one collision during a game.
+                </p>
+
+                <button onclick="buyLife()">
+                    Buy — 150 🪙
+                </button>
+
+                <small>
+                    Owned: <span id="lives">0</span>
+                </small>
+
+            </div>
+
+            <!-- SKINS -->
+            <div class="shop-item">
+
+                <h3>🌈 Neon Skins</h3>
+
+                <div class="skin-buttons">
+
+                    <button onclick="buySkin('green',0)">
+                        🟢 Classic
+                    </button>
+
+                    <button onclick="buySkin('blue',75)">
+                        🔵 Blue — 75
+                    </button>
+
+                    <button onclick="buySkin('purple',150)">
+                        🟣 Purple — 150
+                    </button>
+
+                    <button onclick="buySkin('gold',300)">
+                        🟡 Gold — 300
+                    </button>
+
+                    <button onclick="buySkin('rainbow',500)">
+                        🌈 Rainbow — 500
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <div id="achievements" class="panel hidden">
+
+        <h2>🏆 ACHIEVEMENTS</h2>
+
+        <div id="achievementList"></div>
+
+    </div>
+
+    <!-- POPUP -->
+    <div id="popup"></div>
+
+
+    <script>
+
+        /* =========================================
+           CANVAS
+        ========================================= */
+
+        const canvas =
+            document.getElementById("game");
+
+        const ctx =
+            canvas.getContext("2d");
+
+        const GRID = 24;
+        const SIZE = 25;
+
+
+        /* =========================================
+           GAME STATE
+        ========================================= */
+
+        let snake = [];
+
+        let food = null;
+        let specialFood = null;
+
+        let direction = {
+            x: 1,
+            y: 0
+        };
+
+        let nextDirection = {
+            x: 1,
+            y: 0
+        };
+
+        let score = 0;
+
+        let coins =
+            Number(localStorage.getItem("snakeCoins")) || 0;
+
+        let highScore =
+            Number(localStorage.getItem("snakeHighScore")) || 0;
+
+        let level = 1;
+        let combo = 1;
+
+        let gameRunning = false;
+        let paused = false;
+
+        let lastMoveTime = 0;
+
+        let speedLevel =
+            Number(localStorage.getItem("snakeSpeedLevel")) || 0;
+
+        let coinLevel =
+            Number(localStorage.getItem("snakeCoinLevel")) || 0;
+
+        let purchasedLives =
+            Number(localStorage.getItem("snakeLives")) || 0;
+
+        let skin =
+            localStorage.getItem("snakeSkin") || "green";
+
+        let particles = [];
+
+        let foodPulse = 0;
+
+        let screenShake = 0;
+
+        let comboTimeout = null;
+
+
+        /* =========================================
+           ACHIEVEMENTS
+        ========================================= */
+
+        const achievementData = [
+
+            {
+                id: "first",
+                icon: "🍎",
+                name: "First Bite",
+                text: "Eat your first food."
+            },
+
+            {
+                id: "ten",
+                icon: "🐍",
+                name: "Getting Started",
+                text: "Reach 10 points."
+            },
+
+            {
+                id: "twentyFive",
+                icon: "🔥",
+                name: "On Fire",
+                text: "Reach 25 points."
+            },
+
+            {
+                id: "fifty",
+                icon: "👑",
+                name: "Snake Royalty",
+                text: "Reach 50 points."
+            },
+
+            {
+                id: "hundred",
+                icon: "💯",
+                name: "Century",
+                text: "Reach 100 points."
+            },
+
+            {
+                id: "combo5",
+                icon: "⚡",
+                name: "Combo Master",
+                text: "Reach a x5 combo."
+            },
+
+            {
+                id: "level5",
+                icon: "🚀",
+                name: "Rocket Snake",
+                text: "Reach level 5."
+            },
+
+            {
+                id: "gold",
+                icon: "✨",
+                name: "Golden Hunter",
+                text: "Eat special food."
+            },
+
+            {
+                id: "long",
+                icon: "🐉",
+                name: "Dragon",
+                text: "Grow to 30 segments."
+            }
+
+        ];
+
+        let achievements =
+            JSON.parse(
+                localStorage.getItem("snakeAchievements") || "{}"
+            );
+
+
+        /* =========================================
+           AUDIO
+        ========================================= */
+
+        let audioContext = null;
+
+        function initAudio() {
+
+            if (!audioContext) {
+
+                audioContext =
+                    new (
+                        window.AudioContext ||
+                        window.webkitAudioContext
+                    )();
+            }
+
+            if (audioContext.state === "suspended") {
+                audioContext.resume();
+            }
+        }
+
+        function beep(
+            frequency = 500,
+            duration = .06,
+            type = "square"
+        ) {
+
+            if (!audioContext) return;
+
+            const oscillator =
+                audioContext.createOscillator();
+
+            const gain =
+                audioContext.createGain();
+
+            oscillator.type = type;
+
+            oscillator.frequency.value =
+                frequency;
+
+            gain.gain.setValueAtTime(
+                .07,
+                audioContext.currentTime
+            );
+
+            gain.gain.exponentialRampToValueAtTime(
+                .001,
+                audioContext.currentTime + duration
+            );
+
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+
+            oscillator.start();
+
+            oscillator.stop(
+                audioContext.currentTime + duration
+            );
+        }
+
+
+        /* =========================================
+           START
+        ========================================= */
+
+        function startGame() {
+
+            initAudio();
+
+            snake = [
+                { x: 12, y: 12 },
+                { x: 11, y: 12 },
+                { x: 10, y: 12 },
+                { x: 9, y: 12 }
+            ];
+
+            direction = {
+                x: 1,
+                y: 0
+            };
+
+            nextDirection = {
+                x: 1,
+                y: 0
+            };
+
+            score = 0;
+            level = 1;
+            combo = 1;
+
+            food = null;
+            specialFood = null;
+
+            particles = [];
+
+            paused = false;
+            gameRunning = true;
+
+            lastMoveTime =
+                performance.now();
+
+            document
+                .getElementById("startScreen")
+                .classList.add("hidden");
+
+            document
+                .getElementById("gameOverScreen")
+                .classList.add("hidden");
+
+            document
+                .getElementById("pauseScreen")
+                .classList.add("hidden");
+
+            document
+                .getElementById("message")
+                .textContent = "";
+
+            placeFood();
+
+            beep(500, .07);
+
+            setTimeout(
+                () => beep(700, .07),
+                70
+            );
+
+            updateDisplay();
+        }
+
+
+        /* =========================================
+           SPEED
+        ========================================= */
+
+        function getSpeed() {
+
+            const baseSpeed = 125;
+
+            const levelSpeed =
+                (level - 1) * 5;
+
+            const upgradeBonus =
+                speedLevel * 3;
+
+            return Math.max(
+                62,
+                baseSpeed -
+                levelSpeed +
+                upgradeBonus
+            );
+        }
+
+
+        /* =========================================
+           FOOD
+        ========================================= */
+
+        function randomPosition() {
+
+            return {
+
+                x:
+                    Math.floor(
+                        Math.random() * GRID
+                    ),
+
+                y:
+                    Math.floor(
+                        Math.random() * GRID
+                    )
+            };
+        }
+
+        function positionOnSnake(pos) {
+
+            return snake.some(
+                part =>
+                    part.x === pos.x &&
+                    part.y === pos.y
+            );
+        }
+
+        function placeFood() {
+
+            do {
+
+                food =
+                    randomPosition();
+
+            } while (
+                positionOnSnake(food)
+            );
+
+            specialFood = null;
+
+            if (Math.random() < .15) {
+
+                do {
+
+                    specialFood =
+                        randomPosition();
+
+                } while (
+                    positionOnSnake(specialFood) ||
+                    (
+                        specialFood.x === food.x &&
+                        specialFood.y === food.y
+                    )
+                );
+
+                const specialReference =
+                    specialFood;
+
+                setTimeout(() => {
+
+                    if (
+                        specialFood === specialReference
+                    ) {
+                        specialFood = null;
+                    }
+
+                }, 4500);
+            }
+        }
+
+
+        /* =========================================
+           MOVEMENT
+        ========================================= */
+
+        function updateGame() {
+
+            if (!gameRunning || paused) {
+                return;
+            }
+
+            direction = {
+                x: nextDirection.x,
+                y: nextDirection.y
+            };
+
+            const head = {
+
+                x:
+                    snake[0].x +
+                    direction.x,
+
+                y:
+                    snake[0].y +
+                    direction.y
+            };
+
+
+            if (
+                head.x < 0 ||
+                head.x >= GRID ||
+                head.y < 0 ||
+                head.y >= GRID
+            ) {
+
+                crash();
+
+                return;
+            }
+
+
+            if (
+                snake.some(
+                    part =>
+                        part.x === head.x &&
+                        part.y === head.y
+                )
+            ) {
+
+                crash();
+
+                return;
+            }
+
+
+            snake.unshift(head);
+
+            let ate = false;
+
+
+            if (
+                food &&
+                head.x === food.x &&
+                head.y === food.y
+            ) {
+
+                ate = true;
+
+                eatNormalFood();
+            }
+
+
+            if (
+                specialFood &&
+                head.x === specialFood.x &&
+                head.y === specialFood.y
+            ) {
+
+                ate = true;
+
+                eatSpecialFood();
+            }
+
+
+            if (!ate) {
+                snake.pop();
+            }
+
+
+            const newLevel =
+                Math.floor(score / 10) + 1;
+
+            if (newLevel > level) {
+
+                level = newLevel;
+
+                levelUp();
+            }
+
+
+            checkAchievements();
+
+            updateDisplay();
+        }
+
+
+        /* =========================================
+           ONE ANIMATION LOOP
+        ========================================= */
+
+        function animationLoop(timestamp) {
+
+            if (
+                gameRunning &&
+                !paused &&
+                timestamp - lastMoveTime >= getSpeed()
+            ) {
+
+                updateGame();
+
+                lastMoveTime = timestamp;
+            }
+
+            draw(timestamp);
+
+            requestAnimationFrame(animationLoop);
+        }
+
+
+        /* =========================================
+           NORMAL FOOD
+        ========================================= */
+
+        function eatNormalFood() {
+
+            score++;
+
+            combo++;
+
+            clearTimeout(comboTimeout);
+
+            comboTimeout =
+                setTimeout(() => {
+
+                    combo = 1;
+
+                    updateDisplay();
+
+                }, 2300);
+
+            const earned =
+                (5 + coinLevel * 3) *
+                Math.min(combo, 5);
+
+            coins += earned;
+
+            createParticles(
+                food.x * SIZE + SIZE / 2,
+                food.y * SIZE + SIZE / 2,
+                "#00ff88",
+                12
+            );
+
+            screenShake = 2;
+
+            beep(
+                450 + combo * 35,
+                .05,
+                "square"
+            );
+
+            showCombo();
+
+            placeFood();
+        }
+
+
+        /* =========================================
+           SPECIAL FOOD
+        ========================================= */
+
+        function eatSpecialFood() {
+
+            score += 3;
+
+            combo += 2;
+
+            coins +=
+                30 + coinLevel * 5;
+
+            createParticles(
+                specialFood.x * SIZE + SIZE / 2,
+                specialFood.y * SIZE + SIZE / 2,
+                "#ffe600",
+                24
+            );
+
+            screenShake = 6;
+
+            beep(700, .07, "sine");
+
+            setTimeout(
+                () => beep(1000, .1, "sine"),
+                60
+            );
+
+            unlockAchievement("gold");
+
+            showPopup(
+                "✨ GOLDEN FOOD! +3"
+            );
+
+            specialFood = null;
+        }
+
+
+        /* =========================================
+           COMBO
+        ========================================= */
+
+        function showCombo() {
+
+            if (combo < 2) return;
+
+            const element =
+                document.getElementById("comboText");
+
+            element.textContent =
+                combo >= 5
+                    ? "🔥 INSANE x" + combo
+                    : "🔥 COMBO x" + combo;
+
+            element.classList.remove("show");
+
+            void element.offsetWidth;
+
+            element.classList.add("show");
+
+            setTimeout(
+                () =>
+                    element.classList.remove("show"),
+                450
+            );
+        }
+
+
+        /* =========================================
+           LEVEL UP
+        ========================================= */
+
+        function levelUp() {
+
+            createParticles(
+                snake[0].x * SIZE,
+                snake[0].y * SIZE,
+                "#7dffbe",
+                30
+            );
+
+            screenShake = 7;
+
+            showPopup(
+                "🚀 LEVEL " + level
+            );
+
+            beep(500, .08, "sine");
+
+            setTimeout(
+                () => beep(750, .08, "sine"),
+                90
+            );
+
+            setTimeout(
+                () => beep(1000, .12, "sine"),
+                180
+            );
+        }
+
+
+        /* =========================================
+           CRASH
+        ========================================= */
+
+        function crash() {
+
+            if (purchasedLives > 0) {
+
+                purchasedLives--;
+
+                localStorage.setItem(
+                    "snakeLives",
+                    purchasedLives
+                );
+
+                snake = [
+                    { x: 12, y: 12 },
+                    { x: 11, y: 12 },
+                    { x: 10, y: 12 }
+                ];
+
+                direction = {
+                    x: 1,
+                    y: 0
+                };
+
+                nextDirection = {
+                    x: 1,
+                    y: 0
+                };
+
+                combo = 1;
+
+                lastMoveTime =
+                    performance.now();
+
+                showPopup(
+                    "❤️ EXTRA LIFE!"
+                );
+
+                beep(300, .1);
+
+                updateDisplay();
+
+                return;
+            }
+
+            endGame();
+        }
+
+
+        /* =========================================
+           GAME OVER
+        ========================================= */
+
+        function endGame() {
+
+            gameRunning = false;
+
+            if (score > highScore) {
+
+                highScore = score;
+
+                localStorage.setItem(
+                    "snakeHighScore",
+                    highScore
+                );
+
+                document
+                    .getElementById("finalMessage")
+                    .textContent =
+                    "🏆 NEW HIGH SCORE!";
+            }
+
+            else {
+
+                document
+                    .getElementById("finalMessage")
+                    .textContent =
+                    "You reached level " +
+                    level + ".";
+            }
+
+            document
+                .getElementById("finalScore")
+                .textContent = score;
+
+            document
+                .getElementById("gameOverScreen")
+                .classList.remove("hidden");
+
+            createParticles(
+                snake[0].x * SIZE,
+                snake[0].y * SIZE,
+                "#ff304f",
+                30
+            );
+
+            beep(
+                180,
+                .18,
+                "sawtooth"
+            );
+
+            saveData();
+
+            updateDisplay();
+        }
+
+
+        /* =========================================
+           PAUSE
+        ========================================= */
+
+        function togglePause() {
+
+            if (!gameRunning) {
+                return;
+            }
+
+            paused = !paused;
+
+            document
+                .getElementById("pauseScreen")
+                .classList.toggle(
+                    "hidden",
+                    !paused
+                );
+
+            lastMoveTime =
+                performance.now();
+
+            if (paused) {
+                beep(350, .06);
+            }
+        }
+
+
+        /* =========================================
+           DIRECTION
+        ========================================= */
+
+        function changeDirection(x, y) {
+
+            if (!gameRunning || paused) {
+                return;
+            }
+
+            if (
+                x === -direction.x &&
+                y === -direction.y
+            ) {
+                return;
+            }
+
+            nextDirection = {
+                x,
+                y
+            };
+        }
+
+
+        /* =========================================
+           KEYBOARD
+        ========================================= */
+
+        document.addEventListener(
+            "keydown",
+            event => {
+
+                const key =
+                    event.key.toLowerCase();
+
+                if (
+                    [
+                        "arrowup",
+                        "arrowdown",
+                        "arrowleft",
+                        "arrowright",
+                        "w",
+                        "a",
+                        "s",
+                        "d",
+                        " "
+                    ].includes(key)
+                ) {
+
+                    event.preventDefault();
+                }
+
+                if (
+                    key === "arrowup" ||
+                    key === "w"
+                ) {
+                    changeDirection(0, -1);
+                }
+
+                if (
+                    key === "arrowdown" ||
+                    key === "s"
+                ) {
+                    changeDirection(0, 1);
+                }
+
+                if (
+                    key === "arrowleft" ||
+                    key === "a"
+                ) {
+                    changeDirection(-1, 0);
+                }
+
+                if (
+                    key === "arrowright" ||
+                    key === "d"
+                ) {
+                    changeDirection(1, 0);
+                }
+
+                if (key === " ") {
+                    togglePause();
+                }
+            }
+        );
+
+
+        /* =========================================
+           PARTICLES
+        ========================================= */
+
+        function createParticles(
+            x,
+            y,
+            color,
+            amount
+        ) {
+
+            for (
+                let i = 0;
+                i < amount;
+                i++
+            ) {
+
+                const angle =
+                    Math.random() *
+                    Math.PI * 2;
+
+                const speed =
+                    Math.random() * 3 + 1;
+
+                particles.push({
+
+                    x,
+                    y,
+
+                    vx:
+                        Math.cos(angle) *
+                        speed,
+
+                    vy:
+                        Math.sin(angle) *
+                        speed,
+
+                    life: 1,
+
+                    size:
+                        Math.random() * 4 + 2,
+
+                    color
+                });
+            }
+        }
+
+
+        function updateParticles() {
+
+            for (
+                let i = particles.length - 1;
+                i >= 0;
+                i--
+            ) {
+
+                const p =
+                    particles[i];
+
+                p.x += p.vx;
+                p.y += p.vy;
+
+                p.vx *= .97;
+                p.vy *= .97;
+
+                p.life -= .04;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+
+        /* =========================================
+           DRAW
+        ========================================= */
+
+        function draw(timestamp = 0) {
+
+            updateParticles();
+
+            ctx.save();
+
+            if (screenShake > .1) {
+
+                ctx.translate(
+                    (Math.random() - .5) *
+                    screenShake,
+
+                    (Math.random() - .5) *
+                    screenShake
+                );
+
+                screenShake *= .82;
+            }
+
+
+            const gradient =
+                ctx.createRadialGradient(
+                    300,
+                    300,
+                    40,
+                    300,
+                    300,
+                    450
+                );
+
+            gradient.addColorStop(
+                0,
+                "#0b1923"
+            );
+
+            gradient.addColorStop(
+                1,
+                "#03070d"
+            );
+
+            ctx.fillStyle = gradient;
+
+            ctx.fillRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+
+            /* GRID */
+
+            ctx.strokeStyle =
+                "rgba(0,255,136,.04)";
+
+            ctx.lineWidth = 1;
+
+            for (
+                let x = 0;
+                x <= canvas.width;
+                x += SIZE
+            ) {
+
+                ctx.beginPath();
+
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+
+                ctx.stroke();
+            }
+
+            for (
+                let y = 0;
+                y <= canvas.height;
+                y += SIZE
+            ) {
+
+                ctx.beginPath();
+
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+
+                ctx.stroke();
+            }
+
+
+            /* NORMAL FOOD */
+
+            foodPulse += .08;
+
+            if (food) {
+
+                const pulse =
+                    1 +
+                    Math.sin(foodPulse) *
+                    .12;
+
+                const x =
+                    food.x * SIZE +
+                    SIZE / 2;
+
+                const y =
+                    food.y * SIZE +
+                    SIZE / 2;
+
+                ctx.save();
+
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = "#ff304f";
+
+                ctx.fillStyle = "#ff304f";
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x,
+                    y,
+                    8 * pulse,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+
+            /* SPECIAL FOOD */
+
+            if (specialFood) {
+
+                const x =
+                    specialFood.x * SIZE +
+                    SIZE / 2;
+
+                const y =
+                    specialFood.y * SIZE +
+                    SIZE / 2;
+
+                const pulse =
+                    1 +
+                    Math.sin(foodPulse * 1.5) *
+                    .18;
+
+                ctx.save();
+
+                ctx.shadowBlur = 35;
+                ctx.shadowColor = "#ffe600";
+
+                ctx.fillStyle = "#ffe600";
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x,
+                    y,
+                    10 * pulse,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+
+            /* SNAKE */
+
+            for (
+                let index = 0;
+                index < snake.length;
+                index++
+            ) {
+
+                const segment =
+                    snake[index];
+
+                const x =
+                    segment.x * SIZE;
+
+                const y =
+                    segment.y * SIZE;
+
+                let mainColor;
+                let glowColor;
+
+
+                if (skin === "blue") {
+
+                    mainColor =
+                        index === 0
+                            ? "#7dd3ff"
+                            : "#168cff";
+
+                    glowColor = "#168cff";
+                }
+
+                else if (skin === "purple") {
+
+                    mainColor =
+                        index === 0
+                            ? "#f0a0ff"
+                            : "#a22cff";
+
+                    glowColor = "#b72cff";
+                }
+
+                else if (skin === "gold") {
+
+                    mainColor =
+                        index === 0
+                            ? "#fff6a0"
+                            : "#ffbf00";
+
+                    glowColor = "#ffd000";
+                }
+
+                else if (skin === "rainbow") {
+
+                    const hue =
+                        (
+                            index * 15 +
+                            timestamp / 15
+                        ) % 360;
+
+                    mainColor =
+                        `hsl(${hue},100%,60%)`;
+
+                    glowColor = mainColor;
+                }
+
+                else {
+
+                    mainColor =
+                        index === 0
+                            ? "#a4ffcf"
+                            : "#00d978";
+
+                    glowColor = "#00ff88";
+                }
+
+
+                ctx.save();
+
+                ctx.shadowBlur =
+                    index === 0
+                        ? 22
+                        : 10;
+
+                ctx.shadowColor =
+                    glowColor;
+
+                ctx.fillStyle =
+                    mainColor;
+
+                const padding =
+                    index === 0 ? 2 : 3;
+
+                ctx.beginPath();
+
+                roundedRect(
+                    x + padding,
+                    y + padding,
+                    SIZE - padding * 2,
+                    SIZE - padding * 2,
+                    6
+                );
+
+                ctx.fill();
+
+
+                /* HEAD EYE */
+
+                if (index === 0) {
+
+                    ctx.fillStyle =
+                        "rgba(255,255,255,.55)";
+
+                    ctx.beginPath();
+
+                    ctx.arc(
+                        x + 8,
+                        y + 7,
+                        2.5,
+                        0,
+                        Math.PI * 2
+                    );
+
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+
+
+            /* PARTICLES */
+
+            for (
+                let i = 0;
+                i < particles.length;
+                i++
+            ) {
+
+                const p =
+                    particles[i];
+
+                ctx.globalAlpha =
+                    p.life;
+
+                ctx.fillStyle =
+                    p.color;
+
+                ctx.shadowBlur = 10;
+
+                ctx.shadowColor =
+                    p.color;
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    p.x,
+                    p.y,
+                    p.size * p.life,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fill();
+            }
+
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+
+            ctx.restore();
+        }
+
+
+        /* =========================================
+           ROUNDED RECT
+        ========================================= */
+
+        function roundedRect(
+            x,
+            y,
+            width,
+            height,
+            radius
+        ) {
+
+            ctx.moveTo(
+                x + radius,
+                y
+            );
+
+            ctx.arcTo(
+                x + width,
+                y,
+                x + width,
+                y + height,
+                radius
+            );
+
+            ctx.arcTo(
+                x + width,
+                y + height,
+                x,
+                y + height,
+                radius
+            );
+
+            ctx.arcTo(
+                x,
+                y + height,
+                x,
+                y,
+                radius
+            );
+
+            ctx.arcTo(
+                x,
+                y,
+                x + width,
+                y,
+                radius
+            );
+
+            ctx.closePath();
+        }
+
+
+        /* =========================================
+           PANELS
+        ========================================= */
+
+        function togglePanel(id) {
+
+            const panel =
+                document.getElementById(id);
+
+            const otherId =
+                id === "shop"
+                    ? "achievements"
+                    : "shop";
+
+            const other =
+                document.getElementById(otherId);
+
+            /* Close the other panel */
+            other.classList.add("hidden");
+
+            /* Toggle the requested panel */
+            panel.classList.toggle("hidden");
+
+            /* Scroll back toward the game */
+            if (!panel.classList.contains("hidden")) {
+
+                setTimeout(() => {
+
+                    panel.scrollIntoView({
+                        behavior: "smooth",
+                        block: "nearest"
+                    });
+
+                }, 50);
+            }
+        }
+
+
+        /* =========================================
+           SHOP — SPEED
+        ========================================= */
+
+        function buySpeed() {
+
+            const cost =
+                50 + speedLevel * 75;
+
+            if (coins < cost) {
+
+                showPopup(
+                    "❌ NOT ENOUGH COINS"
+                );
+
+                return;
+            }
+
+            coins -= cost;
+
+            speedLevel++;
+
+            localStorage.setItem(
+                "snakeSpeedLevel",
+                speedLevel
+            );
+
+            saveData();
+            updateDisplay();
+
+            showPopup(
+                "⚡ SPEED UPGRADED!"
+            );
+        }
+
+
+        /* =========================================
+           SHOP — COINS
+        ========================================= */
+
+        function buyCoinBonus() {
+
+            const cost =
+                75 + coinLevel * 100;
+
+            if (coins < cost) {
+
+                showPopup(
+                    "❌ NOT ENOUGH COINS"
+                );
+
+                return;
+            }
+
+            coins -= cost;
+
+            coinLevel++;
+
+            localStorage.setItem(
+                "snakeCoinLevel",
+                coinLevel
+            );
+
+            saveData();
+            updateDisplay();
+
+            showPopup(
+                "💰 COIN MAGNET UPGRADED!"
+            );
+        }
+
+
+        /* =========================================
+           SHOP — LIFE
+        ========================================= */
+
+        function buyLife() {
+
+            if (coins < 150) {
+
+                showPopup(
+                    "❌ NOT ENOUGH COINS"
+                );
+
+                return;
+            }
+
+            coins -= 150;
+
+            purchasedLives++;
+
+            localStorage.setItem(
+                "snakeLives",
+                purchasedLives
+            );
+
+            saveData();
+            updateDisplay();
+
+            showPopup(
+                "❤️ EXTRA LIFE!"
+            );
+        }
+
+
+        /* =========================================
+           SKINS
+        ========================================= */
+
+        function buySkin(name, price) {
+
+            if (name === skin) {
+
+                showPopup(
+                    "🎨 ALREADY EQUIPPED"
+                );
+
+                return;
+            }
+
+            if (price > 0) {
+
+                const owned =
+                    localStorage.getItem(
+                        "snakeSkin_" + name
+                    );
+
+                if (!owned) {
+
+                    if (coins < price) {
+
+                        showPopup(
+                            "❌ NOT ENOUGH COINS"
+                        );
+
+                        return;
+                    }
+
+                    coins -= price;
+
+                    localStorage.setItem(
+                        "snakeSkin_" + name,
+                        "true"
+                    );
+                }
+            }
+
+            skin = name;
+
+            localStorage.setItem(
+                "snakeSkin",
+                skin
+            );
+
+            saveData();
+            updateDisplay();
+
+            showPopup(
+                "🎨 " +
+                name.toUpperCase() +
+                " EQUIPPED!"
+            );
+        }
+
+
+        /* =========================================
+           ACHIEVEMENTS
+        ========================================= */
+
+        function unlockAchievement(id) {
+
+            if (achievements[id]) {
+                return;
+            }
+
+            achievements[id] = true;
+
+            const achievement =
+                achievementData.find(
+                    a => a.id === id
+                );
+
+            if (!achievement) {
+                return;
+            }
+
+            saveData();
+
+            showPopup(
+                "🏆 " +
+                achievement.icon +
+                " " +
+                achievement.name
+            );
+
+            beep(700, .07, "sine");
+
+            setTimeout(
+                () => beep(1000, .1, "sine"),
+                80
+            );
+
+            renderAchievements();
+        }
+
+
+        function checkAchievements() {
+
+            if (score >= 1)
+                unlockAchievement("first");
+
+            if (score >= 10)
+                unlockAchievement("ten");
+
+            if (score >= 25)
+                unlockAchievement("twentyFive");
+
+            if (score >= 50)
+                unlockAchievement("fifty");
+
+            if (score >= 100)
+                unlockAchievement("hundred");
+
+            if (combo >= 5)
+                unlockAchievement("combo5");
+
+            if (level >= 5)
+                unlockAchievement("level5");
+
+            if (snake.length >= 30)
+                unlockAchievement("long");
+        }
+
+
+        function renderAchievements() {
+
+            const container =
+                document.getElementById(
+                    "achievementList"
+                );
+
+            container.innerHTML = "";
+
+            achievementData.forEach(
+                achievement => {
+
+                    const unlocked =
+                        achievements[
+                        achievement.id
+                        ];
+
+                    const div =
+                        document.createElement("div");
+
+                    div.className =
+                        "achievement " +
+                        (
+                            unlocked
+                                ? "unlocked"
+                                : ""
+                        );
+
+                    div.innerHTML = `
+
+                <div class="achievement-icon">
+                    ${unlocked
+                            ? achievement.icon
+                            : "🔒"
+                        }
+                </div>
+
+                <div>
+
+                    <strong>
+                        ${achievement.name}
+                    </strong>
+
+                    <div style="
+                        color:#788ca5;
+                        font-size:8px;
+                        margin-top:4px;
+                    ">
+                        ${achievement.text}
+                    </div>
+
+                </div>
+            `;
+
+                    container.appendChild(div);
+                }
+            );
+        }
+
+
+        /* =========================================
+           POPUPS
+        ========================================= */
+
+        let popupTimeout;
+
+        function showPopup(text) {
+
+            const popup =
+                document.getElementById(
+                    "popup"
+                );
+
+            popup.textContent = text;
+
+            popup.classList.add("show");
+
+            clearTimeout(popupTimeout);
+
+            popupTimeout =
+                setTimeout(
+                    () =>
+                        popup.classList.remove("show"),
+                    1800
+                );
+        }
+
+
+        /* =========================================
+           DISPLAY
+        ========================================= */
+
+        function updateDisplay() {
+
+            document.getElementById("score")
+                .textContent = score;
+
+            document.getElementById("coins")
+                .textContent = coins;
+
+            document.getElementById("highScore")
+                .textContent = highScore;
+
+            document.getElementById("level")
+                .textContent = level;
+
+            document.getElementById("combo")
+                .textContent = combo;
+
+            document.getElementById("shopCoins")
+                .textContent = coins;
+
+            document.getElementById("speedLevel")
+                .textContent = speedLevel;
+
+            document.getElementById("coinLevel")
+                .textContent = coinLevel;
+
+            document.getElementById("lives")
+                .textContent =
+                purchasedLives;
+
+            document.getElementById("speedCost")
+                .textContent =
+                50 + speedLevel * 75;
+
+            document.getElementById("coinCost")
+                .textContent =
+                75 + coinLevel * 100;
+        }
+
+
+        /* =========================================
+           SAVE
+        ========================================= */
+
+        function saveData() {
+
+            localStorage.setItem(
+                "snakeCoins",
+                coins
+            );
+
+            localStorage.setItem(
+                "snakeHighScore",
+                highScore
+            );
+
+            localStorage.setItem(
+                "snakeSpeedLevel",
+                speedLevel
+            );
+
+            localStorage.setItem(
+                "snakeCoinLevel",
+                coinLevel
+            );
+
+            localStorage.setItem(
+                "snakeLives",
+                purchasedLives
+            );
+
+            localStorage.setItem(
+                "snakeSkin",
+                skin
+            );
+
+            localStorage.setItem(
+                "snakeAchievements",
+                JSON.stringify(
+                    achievements
+                )
+            );
+        }
+
+
+        /* =========================================
+           INITIALIZE
+        ========================================= */
+
+        renderAchievements();
+
+        updateDisplay();
+
+        /*
+           IMPORTANT:
+           Only ONE animation loop is started.
+           This prevents the lag that happened before.
+        */
+
+        requestAnimationFrame(
+            animationLoop
+        );
+
+    </script>
+
+</body>
+
+</html>
