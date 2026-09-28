@@ -14,138 +14,160 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
 
-    background: #eeeeee;
+     background: #eeeeee;
 
     color: #222222;
 
     font-family: "Orbitron", Arial, sans-serif;
 
     text-align: center;
-
+    
 }
 
-/* =========================================
-TITLE
-========================================= */
+/* NEON BACKGROUND DETAIL */
+
+body::before {
+    content: "";
+
+     position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background-image:
+        linear-gradient(rgba(0, 255, 136, .025) 1px,
+            transparent 1px),
+        linear-gradient(90deg,
+            rgba(0, 255, 136, .025) 1px,
+            transparent 1px);
+
+    background-size: 35px 35px;
+    
+}
+
+/* TITLE */
 
 h1 {
-    margin: 20px 0 3px;
+    margin: 8px 0 2px;
 
-    font-size: clamp(30px, 5vw, 45px);
+     font-size: clamp(30px, 5vw, 45px);
 
     letter-spacing: 3px;
 
     color: #222222;
 
     text-shadow:
-        4px 4px 0 #cccccc;
-
+        0 0 8px #00ff88,
+        3px 3px 0 #cccccc;
+    
 }
 
 .subtitle {
-    color: #7554b8;
+    color: #00a95b;
 
-    margin-bottom: 12px;
+     margin-bottom: 8px;
 
-    font-size: 10px;
+    font-size: 9px;
 
     letter-spacing: 2px;
 
     font-weight: 700;
 
+    text-shadow:
+        0 0 8px rgba(0, 255, 136, .5);
+    
 }
 
-/* =========================================
-STATS
-========================================= */
+/* STATS */
 
 #stats {
     width: min(620px, 92vw);
 
-    margin: 10px auto;
+     margin: 7px auto;
 
     display: grid;
 
     grid-template-columns: repeat(5, 1fr);
 
-    gap: 8px;
-
+    gap: 5px;
+    
 }
 
 .stat {
     background: #ffffff;
 
-    border: 3px solid #222222;
+     border: 3px solid #222222;
 
     border-radius: 9px;
 
-    padding: 8px 4px;
+    padding: 6px 3px;
 
     box-shadow: 3px 3px 0 #222222;
-
+    
 }
 
 .stat-label {
     display: block;
 
-    color: #888888;
+     color: #788078;
 
     font-size: 7px;
 
-    margin-bottom: 4px;
-
+    margin-bottom: 3px;
+    
 }
 
 .stat-value {
     font-size: 12px;
 
-    color: #222222;
-
+     color: #222222;
+    
 }
 
-/* =========================================
-GAME
-========================================= */
+/* GAME */
 
 #gameWrapper {
     position: relative;
 
-    width: min(420px, 72vw);
+     width: min(420px, 72vw);
 
-    margin: 14px auto;
-
+    margin: 8px auto;
+    
 }
 
 canvas {
     width: 100%;
 
-    aspect-ratio: 1;
+     aspect-ratio: 1;
 
     display: block;
 
-    background: #15131d;
+    background: #050912;
 
-    border: 5px solid #222222;
+    border: 2px solid #00ff88;
 
-    border-radius: 16px;
+    border-radius: 14px;
 
     box-shadow:
-        8px 8px 0 #222222;
-
+        0 0 15px rgba(0, 255, 136, .25),
+        0 0 35px rgba(0, 255, 136, .12),
+        6px 6px 0 #222222;
+    
 }
 
-/* =========================================
-OVERLAYS
-========================================= */
+/* OVERLAYS */
 
 .overlay {
     position: absolute;
 
-    inset: 0;
+     inset: 0;
 
-    border-radius: 11px;
+    border-radius: 14px;
 
-    background: rgba(34, 34, 34, 0.90);
+    background: rgba(2, 6, 12, .84);
+
+    backdrop-filter: blur(6px);
 
     display: flex;
 
@@ -156,7 +178,7 @@ OVERLAYS
     justify-content: center;
 
     z-index: 10;
-
+    
 }
 
 .overlay.hidden {
@@ -166,42 +188,42 @@ OVERLAYS
 .overlay h2 {
     font-size: 30px;
 
-    margin: 5px;
+     margin: 5px;
 
-    color: white;
+    color: #00ff88;
 
     text-shadow:
-        4px 4px 0 #7554b8;
-
+        0 0 10px #00ff88,
+        0 0 25px #00ff88;
+    
 }
 
 .overlay p {
-    color: #dddddd;
+    color: #a8b7c9;
 
-    font-size: 11px;
+     font-size: 11px;
 
     margin: 4px;
-
+    
 }
 
 .big-score {
     font-size: 40px;
 
-    color: #c7b4f0;
+     color: #00ff88;
 
     text-shadow:
-        3px 3px 0 #7554b8;
-
+        0 0 10px #00ff88,
+        0 0 20px #00ff88;
+    
 }
 
-/* =========================================
-BUTTONS
-========================================= */
+/* BUTTONS */
 
 button {
     font-family: inherit;
 
-    border: 3px solid #222222;
+     border: 3px solid #222222;
 
     color: #222222;
 
@@ -215,33 +237,455 @@ button {
 
     cursor: pointer;
 
-    transition: 0.15s;
+    transition: .15s;
 
     font-size: 10px;
 
     box-shadow: 3px 3px 0 #222222;
-
+    
 }
 
 button:hover {
-    transform: translate(-2px, -2px);
+    transform:
+        translate(-2px, -2px);
 
-    background: #e5ddff;
+     background: #e8fff4;
 
-    box-shadow: 5px 5px 0 #222222;
+    border-color: #00a95b;
 
+    box-shadow:
+        5px 5px 0 #222222,
+        0 0 12px rgba(0, 255, 136, .35);
+    
 }
 
 button:active {
-    transform: translate(1px, 1px);
-
-    box-shadow: 2px 2px 0 #222222;
-
+    transform: scale(.96);
 }
 
-button:disabled {
-    opacity: 0.5;
+.primary {
+    background: #00d977;
 
-    cursor: not-allowed;
+     border-color: #222222;
 
+    color: #00150b;
+
+    font-weight: 900;
+
+    box-shadow:
+        3px 3px 0 #222222,
+        0 0 10px rgba(0, 255, 136, .35);
+    
+}
+
+.primary:hover {
+    background: #00ff88;
+
+     border-color: #222222;
+    
+}
+
+/* MAIN BUTTONS */
+
+#mainButtons {
+    display: flex;
+
+     justify-content: center;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 2px;
+
+    margin: 3px auto;
+    
+}
+
+/* MESSAGE */
+
+#message {
+    min-height: 18px;
+
+     font-size: 10px;
+
+    color: #00a95b;
+
+    text-shadow:
+        0 0 8px rgba(0, 255, 136, .45);
+    
+}
+
+/* COMBO */
+
+#comboText {
+    position: absolute;
+
+     top: 12px;
+
+    right: 12px;
+
+    font-size: 14px;
+
+    color: #ffe600;
+
+    text-shadow:
+        0 0 10px #ffe600;
+
+    opacity: 0;
+
+    transition: .15s;
+
+    pointer-events: none;
+    
+}
+
+#comboText.show {
+    opacity: 1;
+
+     transform: scale(1.12);
+    
+}
+
+/* PANELS */
+
+.panel {
+    width: min(700px, 92vw);
+
+     margin: 8px auto;
+
+    background: #ffffff;
+
+    border: 3px solid #222222;
+
+    border-radius: 14px;
+
+    padding: 14px;
+
+    text-align: left;
+
+    box-shadow:
+        6px 6px 0 #222222;
+    
+}
+
+.panel.hidden {
+    display: none;
+}
+
+.panel h2 {
+    margin: 0 0 10px;
+
+     color: #00a95b;
+
+    font-size: 20px;
+
+    text-align: center;
+
+    text-shadow:
+        0 0 8px rgba(0, 255, 136, .3);
+    
+}
+
+/* SHOP */
+
+.shop-grid {
+    display: grid;
+
+     grid-template-columns: repeat(2, 1fr);
+
+    gap: 8px;
+    
+}
+
+.shop-item {
+    background: #f5f5f5;
+
+     border: 2px solid #222222;
+
+    border-radius: 11px;
+
+    padding: 10px;
+
+    min-width: 0;
+    
+}
+
+.shop-item h3 {
+    margin: 0 0 5px;
+
+     font-size: 12px;
+
+    color: #222222;
+    
+}
+
+.shop-item p {
+    color: #666666;
+
+     font-size: 9px;
+
+    min-height: 25px;
+
+    margin: 5px 0;
+    
+}
+
+.shop-item button {
+    margin: 2px;
+}
+
+.shop-item small {
+    color: #788078;
+
+     font-size: 8px;
+    
+}
+
+/* SKINS */
+
+.skin-buttons {
+    display: grid;
+
+     grid-template-columns: repeat(2, 1fr);
+
+    gap: 3px;
+    
+}
+
+.skin-buttons button {
+    width: 100%;
+
+     margin: 0;
+    
+}
+
+/* ACHIEVEMENTS */
+
+#achievementList {
+    display: grid;
+
+     grid-template-columns: repeat(3, 1fr);
+
+    gap: 8px;
+    
+}
+
+.achievement {
+    display: flex;
+
+     flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #eeeeee;
+
+    border: 2px solid #888888;
+
+    padding: 9px 5px;
+
+    margin: 0;
+
+    border-radius: 10px;
+
+    min-height: 82px;
+
+    text-align: center;
+
+    opacity: .4;
+
+    transition: .2s;
+    
+}
+
+.achievement.unlocked {
+    opacity: 1;
+
+     border-color: #00a95b;
+
+    background: #e8fff4;
+
+    box-shadow:
+        4px 4px 0 #222222,
+        0 0 10px rgba(0, 255, 136, .2);
+    
+}
+
+.achievement-icon {
+    font-size: 23px;
+
+     margin-bottom: 4px;
+    
+}
+
+.achievement strong {
+    font-size: 11px;
+
+     color: #222222;
+    
+}
+
+.achievement div:last-child {
+    color: #666666;
+
+     font-size: 8px !important;
+
+    margin-top: 4px;
+    
+}
+
+/* MOBILE CONTROLS */
+
+#controls {
+    display: none;
+
+     width: 150px;
+
+    margin: 5px auto;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 3px;
+    
+}
+
+#controls button {
+    margin: 0;
+
+     height: 38px;
+
+    font-size: 15px;
+    
+}
+
+#controls .empty {
+    visibility: hidden;
+}
+
+/* POPUP */
+
+#popup {
+    position: fixed;
+
+     top: 15px;
+
+    left: 50%;
+
+    transform:
+        translateX(-50%) translateY(-100px);
+
+    background: #ffffff;
+
+    color: #222222;
+
+    border: 3px solid #00a95b;
+
+    padding: 11px 20px;
+
+    border-radius: 10px;
+
+    z-index: 100;
+
+    box-shadow:
+        5px 5px 0 #222222,
+        0 0 18px rgba(0, 255, 136, .3);
+
+    transition: .3s;
+
+    pointer-events: none;
+
+    font-size: 11px;
+    
+}
+
+#popup.show {
+    transform:
+        translateX(-50%) translateY(0);
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+     h1 {
+        margin: 5px 0 2px;
+
+        font-size: 30px;
+    }
+
+    .subtitle {
+        margin-bottom: 5px;
+
+        font-size: 8px;
+    }
+
+    #stats {
+        width: 94vw;
+
+        grid-template-columns: repeat(5, 1fr);
+
+        gap: 3px;
+    }
+
+    .stat {
+        padding: 5px 2px;
+    }
+
+    .stat-label {
+        font-size: 6px;
+    }
+
+    .stat-value {
+        font-size: 10px;
+    }
+
+    #gameWrapper {
+        width: min(390px, 82vw);
+
+        margin: 6px auto;
+    }
+
+    #controls {
+        display: grid;
+    }
+
+    .shop-grid {
+        grid-template-columns: 1fr 1fr;
+
+        gap: 6px;
+    }
+
+    #achievementList {
+        grid-template-columns: repeat(2, 1fr);
+
+        gap: 6px;
+    }
+
+    .achievement {
+        min-height: 70px;
+
+        padding: 7px 3px;
+    }
+
+    .achievement-icon {
+        font-size: 20px;
+    }
+
+    .achievement strong {
+        font-size: 9px;
+    }
+
+    .panel {
+        width: 94vw;
+
+        padding: 10px;
+    }
+
+    .panel h2 {
+        font-size: 17px;
+    }
+
+    
 }
